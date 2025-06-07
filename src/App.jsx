@@ -170,12 +170,12 @@ function App() {
                     <ApperIcon name="Bell" className="w-5 h-5" />
                     <span className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full"></span>
                   </button>
-                </div>
+</div>
               </div>
             </header>
 
             {/* Page Content */}
-            <main className="flex-1 overflow-hidden">
+            <main className="flex-1 overflow-y-auto">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeTab}
@@ -183,13 +183,12 @@ function App() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.3 }}
-                  className="h-full"
+                  className="min-h-full"
                 >
                   <currentRoute.component />
                 </motion.div>
               </AnimatePresence>
             </main>
-          </div>
         </div>
 
         <ToastContainer
