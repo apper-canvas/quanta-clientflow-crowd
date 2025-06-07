@@ -41,11 +41,12 @@ const Contacts = () => {
   const handleAddContact = async (e) => {
     e.preventDefault();
     try {
-      const contact = await contactService.create({
-        ...newContact,
-        tags: newContact.tags.filter(tag => tag.trim()),
-        createdAt: new Date().toISOString(),
-        lastActivity: new Date().toISOString()
+const contact = await contactService.create({
+        Name: newContact.name,
+        email: newContact.email,
+        phone: newContact.phone,
+        company: newContact.company,
+        Tags: newContact.tags.filter(tag => tag.trim()).join(',')
       });
       setContacts([contact, ...contacts]);
       setNewContact({ name: '', email: '', phone: '', company: '', tags: [] });
@@ -61,15 +62,21 @@ const Contacts = () => {
     setNewContact({ ...newContact, tags });
   };
 
-  const filteredContacts = contacts.filter(contact => {
-    const matchesSearch = contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         contact.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         contact.company.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesTag = !selectedTag || contact.tags.includes(selectedTag);
+const filteredContacts = contacts.filter(contact => {
+    const name = contact.Name || '';
+    const email = contact.email || '';
+    const company = contact.company || '';
+    const matchesSearch = name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         company.toLowerCase().includes(searchTerm.toLowerCase());
+    const tags = contact.Tags ? contact.Tags.split(',').map(tag => tag.trim()) : [];
+    const matchesTag = !selectedTag || tags.includes(selectedTag);
     return matchesSearch && matchesTag;
   });
 
-  const allTags = [...new Set(contacts.flatMap(contact => contact.tags))];
+  const allTags = [...new Set(contacts.flatMap(contact => 
+    contact.Tags ? contact.Tags.split(',').map(tag => tag.trim()).filter(tag => tag) : []
+  ))];
 
   const ContactCard = ({ contact, index }) => (
     <motion.div
@@ -83,14 +90,14 @@ const Contacts = () => {
         <div className="flex items-center space-x-3">
           <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
             <span className="text-white font-bold text-lg">
-              {contact.name.charAt(0).toUpperCase()}
+{contact.Name?.charAt(0).toUpperCase() || 'U'}
             </span>
           </div>
           <div>
             <h3 className="font-heading font-semibold text-surface-900 dark:text-white">
-              {contact.name}
+              {contact.Name || 'Unnamed Contact'}
             </h3>
-            <p className="text-sm text-surface-600 dark:text-surface-400">{contact.company}</p>
+            <p className="text-sm text-surface-600 dark:text-surface-400">{contact.company || 'No Company'}</p>
           </div>
         </div>
         <button className="p-2 hover:bg-surface-100 dark:hover:bg-surface-700 rounded-lg transition-colors">
@@ -101,29 +108,31 @@ const Contacts = () => {
       <div className="space-y-2 mb-4">
         <div className="flex items-center space-x-2 text-sm text-surface-600 dark:text-surface-400">
           <ApperIcon name="Mail" className="w-4 h-4" />
-          <span>{contact.email}</span>
+<span>{contact.email}</span>
         </div>
-        <div className="flex items-center space-x-2 text-sm text-surface-600 dark:text-surface-400">
-          <ApperIcon name="Phone" className="w-4 h-4" />
-          <span>{contact.phone}</span>
-        </div>
+        {contact.phone && (
+          <div className="flex items-center space-x-2 text-sm text-surface-600 dark:text-surface-400">
+            <ApperIcon name="Phone" className="w-4 h-4" />
+            <span>{contact.phone}</span>
+          </div>
+        )}
       </div>
 
-      {contact.tags.length > 0 && (
+{contact.Tags && (
         <div className="flex flex-wrap gap-2 mb-4">
-          {contact.tags.map((tag, tagIndex) => (
+          {contact.Tags.split(',').filter(tag => tag.trim()).map((tag, tagIndex) => (
             <span
               key={tagIndex}
               className="px-2 py-1 bg-secondary/10 text-secondary text-xs rounded-full"
             >
-              {tag}
+              {tag.trim()}
             </span>
           ))}
         </div>
       )}
 
-      <div className="flex items-center justify-between text-xs text-surface-500 dark:text-surface-400">
-        <span>Last activity: {new Date(contact.lastActivity).toLocaleDateString()}</span>
+<div className="flex items-center justify-between text-xs text-surface-500 dark:text-surface-400">
+        <span>Last activity: {contact.last_activity ? new Date(contact.last_activity).toLocaleDateString() : 'N/A'}</span>
         <div className="flex space-x-1">
           <button className="p-1.5 hover:bg-surface-100 dark:hover:bg-surface-700 rounded">
             <ApperIcon name="MessageSquare" className="w-3.5 h-3.5" />

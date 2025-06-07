@@ -41,11 +41,14 @@ const Tasks = () => {
     }
   };
 
-  const handleAddTask = async (e) => {
+const handleAddTask = async (e) => {
     e.preventDefault();
     try {
       const task = await taskService.create({
-        ...newTask,
+        title: newTask.title,
+        contact_id: newTask.contactId ? parseInt(newTask.contactId) : null,
+        due_date: newTask.dueDate,
+        priority: newTask.priority,
         completed: false
       });
       setTasks([task, ...tasks]);
@@ -62,20 +65,20 @@ const Tasks = () => {
     }
   };
 
-  const handleToggleComplete = async (task) => {
+const handleToggleComplete = async (task) => {
     try {
-      const updatedTask = await taskService.update(task.id, {
-        ...task,
+      const updatedTask = await taskService.update(task.Id, {
         completed: !task.completed
       });
-      setTasks(tasks.map(t => t.id === task.id ? updatedTask : t));
+      setTasks(tasks.map(t => t.Id === task.Id ? updatedTask : t));
       toast.success(updatedTask.completed ? 'Task completed!' : 'Task reopened');
     } catch (err) {
       toast.error('Failed to update task');
     }
   };
 
-  const isOverdue = (dueDate) => {
+const isOverdue = (dueDate) => {
+    if (!dueDate) return false;
     const today = new Date();
     const due = new Date(dueDate);
     today.setHours(0, 0, 0, 0);
@@ -83,14 +86,14 @@ const Tasks = () => {
     return due < today;
   };
 
-  const filteredTasks = tasks.filter(task => {
+const filteredTasks = tasks.filter(task => {
     switch (filter) {
       case 'pending':
         return !task.completed;
       case 'completed':
         return task.completed;
       case 'overdue':
-        return !task.completed && isOverdue(task.dueDate);
+        return !task.completed && isOverdue(task.due_date);
       default:
         return true;
     }
@@ -98,18 +101,17 @@ const Tasks = () => {
     if (a.completed !== b.completed) {
       return a.completed - b.completed;
     }
-    return new Date(a.dueDate) - new Date(b.dueDate);
+    return new Date(a.due_date || 0) - new Date(b.due_date || 0);
   });
 
   const getContactName = (contactId) => {
-    const contact = contacts.find(c => c.id === contactId);
-    return contact?.name || 'No contact';
+    const contact = contacts.find(c => c.Id === parseInt(contactId));
+    return contact?.Name || 'No contact';
   };
 
-  const TaskItem = ({ task, index }) => {
-    const contact = contacts.find(c => c.id === task.contactId);
-    const overdue = !task.completed && isOverdue(task.dueDate);
-    
+const TaskItem = ({ task, index }) => {
+    const contact = contacts.find(c => c.Id === parseInt(task.contact_id));
+    const overdue = !task.completed && isOverdue(task.due_date);
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -136,9 +138,9 @@ const Tasks = () => {
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between mb-2">
               <h3 className={`font-medium text-surface-900 dark:text-white ${
-                task.completed ? 'line-through' : ''
+task.completed ? 'line-through' : ''
               }`}>
-                {task.title}
+                {task.title || task.Name || 'Untitled Task'}
               </h3>
               <div className="flex items-center space-x-2">
                 <div className={`w-2 h-2 rounded-full ${
@@ -153,17 +155,17 @@ const Tasks = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <div className="flex items-center space-x-4 text-sm text-surface-600 dark:text-surface-400">
+<div className="flex items-center space-x-4 text-sm text-surface-600 dark:text-surface-400">
                 {contact && (
                   <div className="flex items-center space-x-1">
-                    <ApperIcon name="User" className="w-3 h-3" />
-                    <span>{contact.name}</span>
+                    <span>{contact.Name}</span>
                   </div>
                 )}
                 <div className="flex items-center space-x-1">
+<div className="flex items-center space-x-1">
                   <ApperIcon name="Calendar" className="w-3 h-3" />
                   <span className={overdue ? 'text-error font-medium' : ''}>
-                    {new Date(task.dueDate).toLocaleDateString()}
+                    {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No due date'}
                   </span>
                 </div>
               </div>
@@ -267,10 +269,10 @@ const Tasks = () => {
       </div>
 
       {/* Tasks List */}
-      {filteredTasks.length > 0 ? (
+{filteredTasks.length > 0 ? (
         <div className="space-y-4">
           {filteredTasks.map((task, index) => (
-            <TaskItem key={task.id} task={task} index={index} />
+            <TaskItem key={task.Id} task={task} index={index} />
           ))}
         </div>
       ) : (
@@ -349,11 +351,11 @@ const Tasks = () => {
                   value={newTask.contactId}
                   onChange={(e) => setNewTask({ ...newTask, contactId: e.target.value })}
                   className="w-full px-3 py-2 border border-surface-200 dark:border-surface-700 rounded-lg bg-white dark:bg-surface-800 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                >
+>
                   <option value="">No contact</option>
                   {contacts.map(contact => (
-                    <option key={contact.id} value={contact.id}>
-                      {contact.name} - {contact.company}
+                    <option key={contact.Id} value={contact.Id}>
+                      {contact.Name} - {contact.company || 'No Company'}
                     </option>
                   ))}
                 </select>

@@ -34,8 +34,9 @@ const Dashboard = () => {
           totalContacts: contacts.length,
           totalDeals: deals.length,
           pipelineValue: deals.reduce((sum, deal) => sum + deal.value, 0),
-          tasksToday: tasks.filter(task => {
-            const taskDate = new Date(task.dueDate);
+tasksToday: tasks.filter(task => {
+            if (!task.due_date) return false;
+            const taskDate = new Date(task.due_date);
             taskDate.setHours(0, 0, 0, 0);
             return taskDate.getTime() === today.getTime() && !task.completed;
           }).length
@@ -122,11 +123,11 @@ const Dashboard = () => {
         'bg-success'
       }`} />
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-surface-900 dark:text-white truncate">
-          {task.title}
+<p className="text-sm font-medium text-surface-900 dark:text-white truncate">
+          {task.title || task.Name || 'Untitled Task'}
         </p>
-        <p className="text-xs text-surface-500 dark:text-surface-400">
-          Due: {new Date(task.dueDate).toLocaleDateString()}
+<p className="text-xs text-surface-500 dark:text-surface-400">
+          Due: {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No due date'}
         </p>
       </div>
     </motion.div>
@@ -211,8 +212,8 @@ const Dashboard = () => {
           <div className="p-3">
             {recentActivities.length > 0 ? (
               <div className="space-y-1">
-                {recentActivities.map((activity, index) => (
-                  <ActivityItem key={activity.id} activity={activity} index={index} />
+{recentActivities.map((activity, index) => (
+                  <ActivityItem key={activity.Id} activity={activity} index={index} />
                 ))}
               </div>
             ) : (
@@ -242,8 +243,8 @@ const Dashboard = () => {
           <div className="p-3">
             {upcomingTasks.length > 0 ? (
               <div className="space-y-1">
-                {upcomingTasks.map((task, index) => (
-                  <TaskItem key={task.id} task={task} index={index} />
+{upcomingTasks.map((task, index) => (
+                  <TaskItem key={task.Id} task={task} index={index} />
                 ))}
               </div>
             ) : (

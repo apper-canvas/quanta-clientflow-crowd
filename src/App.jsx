@@ -1,213 +1,209 @@
-import React, { useState } from 'react';
-import { BrowserRouter } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
-import { motion, AnimatePresence } from 'framer-motion';
-import { routes, routeArray } from './config/routes';
+import { createContext, useEffect, useState } from 'react';
+import { Routes, Route, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { motion } from 'framer-motion';
+import { setUser, clearUser } from './store/userSlice';
 import ApperIcon from './components/ApperIcon';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import Callback from './pages/Callback';
+import ErrorPage from './pages/ErrorPage';
+import Dashboard from './pages/Dashboard';
+import Contacts from './pages/Contacts';
+import Deals from './pages/Deals';
+import Tasks from './pages/Tasks';
+import Reports from './pages/Reports';
+import NotFound from './pages/NotFound';
+
+// Create auth context
+export const AuthContext = createContext(null);
 
 function App() {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [isInitialized, setIsInitialized] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const currentRoute = routes[activeTab];
+  // Get authentication status with proper error handling
+  const userState = useSelector((state) => state.user);
+  const isAuthenticated = userState?.isAuthenticated || false;
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    document.documentElement.classList.toggle('dark');
+  // Initialize ApperUI once when the app loads
+  useEffect(() => {
+    const { ApperClient, ApperUI } = window.ApperSDK;
+    const client = new ApperClient({
+      apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+      apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+    });
+
+    ApperUI.setup(client, {
+      target: '#authentication',
+      clientId: import.meta.env.VITE_APPER_PROJECT_ID,
+      view: 'both',
+      onSuccess: function (user) {
+        setIsInitialized(true);
+        // CRITICAL: This exact currentPath logic must be preserved
+        let currentPath = window.location.pathname + window.location.search;
+        let redirectPath = new URLSearchParams(window.location.search).get('redirect');
+        const isAuthPage = currentPath.includes('/login') || currentPath.includes('/signup') || currentPath.includes('/callback') || currentPath.includes('/error');
+        
+        if (user) {
+          // User is authenticated
+          if (redirectPath) {
+            navigate(redirectPath);
+          } else if (!isAuthPage) {
+            if (!currentPath.includes('/login') && !currentPath.includes('/signup')) {
+              navigate(currentPath);
+            } else {
+              navigate('/dashboard');
+            }
+          } else {
+            navigate('/dashboard');
+          }
+          // Store user information in Redux
+          dispatch(setUser(JSON.parse(JSON.stringify(user))));
+        } else {
+          // User is not authenticated
+          if (!isAuthPage) {
+            navigate(currentPath.includes('/signup') ? `/signup?redirect=${currentPath}` : currentPath.includes('/login') ? `/login?redirect=${currentPath}` : '/login');
+          } else if (redirectPath) {
+            if (!['error', 'signup', 'login', 'callback'].some((path) => currentPath.includes(path)))
+              navigate(`/login?redirect=${redirectPath}`);
+            else {
+              navigate(currentPath);
+            }
+          } else if (isAuthPage) {
+            navigate(currentPath);
+          } else {
+            navigate('/login');
+          }
+          dispatch(clearUser());
+        }
+      },
+      onError: function(error) {
+        console.error("Authentication failed:", error);
+      }
+    });
+  }, [navigate, dispatch]);
+
+  // Authentication methods to share via context
+  const authMethods = {
+    isInitialized,
+    logout: async () => {
+      try {
+        const { ApperUI } = window.ApperSDK;
+        await ApperUI.logout();
+        dispatch(clearUser());
+        navigate('/login');
+      } catch (error) {
+        console.error("Logout failed:", error);
+      }
+    }
   };
 
-  const Sidebar = ({ routes, activeTab, setActiveTab, collapsed, mobile = false }) => (
-    <motion.div
-      initial={mobile ? { x: -300 } : false}
-      animate={mobile ? { x: mobileMenuOpen ? 0 : -300 } : false}
-      className={`${
-        mobile 
-          ? 'fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-surface-800 shadow-xl' 
-          : `bg-white dark:bg-surface-800 border-r border-surface-200 dark:border-surface-700 ${
-              collapsed ? 'w-16' : 'w-64'
-            }`
-      } flex flex-col transition-all duration-300`}
-    >
-      {/* Header */}
-      <div className={`p-4 border-b border-surface-200 dark:border-surface-700 ${collapsed && !mobile ? 'px-2' : ''}`}>
-        <div className="flex items-center justify-between">
-          <motion.div 
-            className="flex items-center space-x-3"
-            animate={{ opacity: collapsed && !mobile ? 0 : 1 }}
-          >
-            <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
-              <ApperIcon name="Users" className="w-5 h-5 text-white" />
+  // Protected route wrapper for authenticated pages
+  const ProtectedRoute = ({ children }) => {
+    if (!isAuthenticated) {
+      return null; // Will be redirected by onSuccess handler
+    }
+    return children;
+  };
+
+  // Dashboard layout for authenticated users
+  const DashboardLayout = ({ children }) => (
+    <div className={`min-h-screen transition-colors ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
+      <div className="flex h-screen">
+        {/* Sidebar */}
+        <div className="w-64 bg-white dark:bg-gray-800 shadow-xl border-r border-gray-200 dark:border-gray-700">
+          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <ApperIcon name="Zap" className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white">ClientFlow</h1>
+                <p className="text-xs text-gray-500 dark:text-gray-400">CRM Dashboard</p>
+              </div>
             </div>
-            {(!collapsed || mobile) && (
-              <h1 className="text-xl font-heading font-bold text-surface-900 dark:text-white">
-                ClientFlow
-              </h1>
-            )}
-          </motion.div>
-          {mobile && (
-            <button
-              onClick={() => setMobileMenuOpen(false)}
-              className="p-2 hover:bg-surface-100 dark:hover:bg-surface-700 rounded-lg"
+          </div>
+          
+          <nav className="mt-6">
+            <div className="px-4 space-y-2">
+              {[
+                { path: '/dashboard', name: 'Dashboard', icon: 'BarChart3' },
+                { path: '/contacts', name: 'Contacts', icon: 'Users' },
+                { path: '/deals', name: 'Deals', icon: 'Target' },
+                { path: '/tasks', name: 'Tasks', icon: 'CheckSquare' },
+                { path: '/reports', name: 'Reports', icon: 'TrendingUp' }
+              ].map((item) => (
+                <motion.button
+                  key={item.path}
+                  onClick={() => navigate(item.path)}
+                  whileHover={{ scale: 1.02, x: 4 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all ${
+                    window.location.pathname === item.path
+                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
+                  }`}
+                >
+                  <ApperIcon name={item.icon} className="w-5 h-5" />
+                  <span className="font-medium">{item.name}</span>
+                </motion.button>
+              ))}
+            </div>
+          </nav>
+
+          <div className="absolute bottom-6 left-4 right-4">
+            <motion.button
+              onClick={() => setDarkMode(!darkMode)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all mb-2"
             >
-              <ApperIcon name="X" className="w-5 h-5" />
-            </button>
-          )}
+              <ApperIcon name={darkMode ? 'Sun' : 'Moon'} className="w-5 h-5" />
+              <span className="font-medium">{darkMode ? 'Light Mode' : 'Dark Mode'}</span>
+            </motion.button>
+            <motion.button
+              onClick={authMethods.logout}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
+            >
+              <ApperIcon name="LogOut" className="w-5 h-5" />
+              <span className="font-medium">Logout</span>
+            </motion.button>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-hidden">
+          <main className="h-full">{children}</main>
         </div>
       </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-2">
-        {routes.map((route) => (
-          <motion.button
-            key={route.id}
-            onClick={() => {
-              setActiveTab(route.id);
-              if (mobile) setMobileMenuOpen(false);
-            }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className={`w-full flex items-center space-x-3 px-3 py-3 rounded-xl text-left transition-all ${
-              activeTab === route.id
-                ? 'bg-gradient-to-r from-primary/10 to-secondary/10 text-primary border border-primary/20'
-                : 'text-surface-600 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-700 hover:text-surface-900 dark:hover:text-white'
-            } ${collapsed && !mobile ? 'justify-center px-2' : ''}`}
-          >
-            <ApperIcon 
-              name={route.icon} 
-              className={`w-5 h-5 ${activeTab === route.id ? 'text-primary' : ''}`} 
-            />
-            {(!collapsed || mobile) && (
-              <span className="font-medium">{route.label}</span>
-            )}
-          </motion.button>
-        ))}
-      </nav>
-
-      {/* Footer */}
-      <div className={`p-4 border-t border-surface-200 dark:border-surface-700 space-y-2 ${collapsed && !mobile ? 'px-2' : ''}`}>
-        <button
-          onClick={toggleDarkMode}
-          className={`w-full flex items-center space-x-3 px-3 py-2 text-surface-600 dark:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-700 rounded-lg transition-all ${
-            collapsed && !mobile ? 'justify-center px-2' : ''
-          }`}
-        >
-          <ApperIcon name={darkMode ? "Sun" : "Moon"} className="w-5 h-5" />
-          {(!collapsed || mobile) && <span className="text-sm">Toggle Theme</span>}
-        </button>
-      </div>
-    </motion.div>
+    </div>
   );
 
+  // Don't render routes until initialization is complete
+  if (!isInitialized) {
+    return <div className="loading flex items-center justify-center min-h-screen">Initializing application...</div>;
+  }
+
   return (
-    <BrowserRouter>
-      <div className={`min-h-screen bg-background dark:bg-surface-900 ${darkMode ? 'dark' : ''}`}>
-        <div className="flex h-screen overflow-hidden">
-          {/* Desktop Sidebar */}
-          <div className="hidden lg:block">
-            <Sidebar 
-              routes={routeArray} 
-              activeTab={activeTab} 
-              setActiveTab={setActiveTab}
-              collapsed={sidebarCollapsed}
-            />
-          </div>
-
-          {/* Mobile Sidebar */}
-          <Sidebar 
-            routes={routeArray} 
-            activeTab={activeTab} 
-            setActiveTab={setActiveTab}
-            collapsed={false}
-            mobile={true}
-          />
-
-          {/* Mobile Overlay */}
-          {mobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-              onClick={() => setMobileMenuOpen(false)}
-            />
-          )}
-
-          {/* Main Content */}
-          <div className="flex-1 flex flex-col overflow-hidden">
-            {/* Header */}
-            <header className="bg-white dark:bg-surface-800 border-b border-surface-200 dark:border-surface-700 px-4 py-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <button
-                    onClick={() => setMobileMenuOpen(true)}
-                    className="lg:hidden p-2 hover:bg-surface-100 dark:hover:bg-surface-700 rounded-lg"
-                  >
-                    <ApperIcon name="Menu" className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                    className="hidden lg:block p-2 hover:bg-surface-100 dark:hover:bg-surface-700 rounded-lg"
-                  >
-                    <ApperIcon name="PanelLeftClose" className="w-5 h-5" />
-                  </button>
-                  <h2 className="text-lg font-heading font-semibold text-surface-900 dark:text-white">
-                    {currentRoute?.label}
-                  </h2>
-                </div>
-                
-                <div className="flex items-center space-x-3">
-                  <div className="relative">
-                    <ApperIcon name="Search" className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-surface-400" />
-                    <input
-                      type="text"
-                      placeholder="Search contacts, deals..."
-                      className="pl-10 pr-4 py-2 w-64 bg-surface-100 dark:bg-surface-700 border border-surface-200 dark:border-surface-600 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                    />
-                  </div>
-                  <button className="p-2 hover:bg-surface-100 dark:hover:bg-surface-700 rounded-lg relative">
-                    <ApperIcon name="Bell" className="w-5 h-5" />
-                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full"></span>
-                  </button>
-</div>
-              </div>
-            </header>
-
-            {/* Page Content */}
-            <main className="flex-1 overflow-y-auto">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeTab}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                  className="min-h-full"
-                >
-<currentRoute.component />
-                </motion.div>
-              </AnimatePresence>
-            </main>
-          </div>
-        </div>
-
-        <ToastContainer
-          position="top-right"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme={darkMode ? "dark" : "light"}
-          className="!text-sm"
-          toastClassName="!rounded-lg !shadow-lg"
-        />
-      </div>
-    </BrowserRouter>
+    <AuthContext.Provider value={authMethods}>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/callback" element={<Callback />} />
+        <Route path="/error" element={<ErrorPage />} />
+        <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout><Dashboard /></DashboardLayout></ProtectedRoute>} />
+        <Route path="/contacts" element={<ProtectedRoute><DashboardLayout><Contacts /></DashboardLayout></ProtectedRoute>} />
+        <Route path="/deals" element={<ProtectedRoute><DashboardLayout><Deals /></DashboardLayout></ProtectedRoute>} />
+        <Route path="/tasks" element={<ProtectedRoute><DashboardLayout><Tasks /></DashboardLayout></ProtectedRoute>} />
+        <Route path="/reports" element={<ProtectedRoute><DashboardLayout><Reports /></DashboardLayout></ProtectedRoute>} />
+        <Route path="/" element={<ProtectedRoute><DashboardLayout><Dashboard /></DashboardLayout></ProtectedRoute>} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </AuthContext.Provider>
   );
 }
 

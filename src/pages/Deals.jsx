@@ -55,10 +55,13 @@ const Deals = () => {
   const handleAddDeal = async (e) => {
     e.preventDefault();
     try {
-      const deal = await dealService.create({
-        ...newDeal,
+const deal = await dealService.create({
+        title: newDeal.title,
         value: parseFloat(newDeal.value) || 0,
-        createdAt: new Date().toISOString()
+        contact_id: parseInt(newDeal.contactId),
+        stage: newDeal.stage,
+        probability: parseInt(newDeal.probability),
+        expected_close: newDeal.expectedClose
       });
       setDeals([deal, ...deals]);
       setNewDeal({
@@ -89,13 +92,12 @@ const Deals = () => {
     if (!draggedDeal || draggedDeal.stage === newStage) return;
 
     try {
-      const updatedDeal = await dealService.update(draggedDeal.id, {
-        ...draggedDeal,
+const updatedDeal = await dealService.update(draggedDeal.Id, {
         stage: newStage
       });
       
-      setDeals(deals.map(deal => 
-        deal.id === draggedDeal.id ? updatedDeal : deal
+setDeals(deals.map(deal => 
+        deal.Id === draggedDeal.Id ? updatedDeal : deal
       ));
       
       toast.success(`Deal moved to ${stages.find(s => s.id === newStage)?.name}`);
@@ -106,14 +108,13 @@ const Deals = () => {
     setDraggedDeal(null);
   };
 
-  const getContactName = (contactId) => {
-    const contact = contacts.find(c => c.id === contactId);
-    return contact?.name || 'Unknown Contact';
+const getContactName = (contactId) => {
+    const contact = contacts.find(c => c.Id === parseInt(contactId));
+    return contact?.Name || 'Unknown Contact';
   };
 
-  const DealCard = ({ deal, isDragging }) => {
-    const contact = contacts.find(c => c.id === deal.contactId);
-    
+const DealCard = ({ deal, isDragging }) => {
+    const contact = contacts.find(c => c.Id === parseInt(deal.contact_id));
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -126,8 +127,8 @@ const Deals = () => {
         }`}
       >
         <div className="flex items-start justify-between mb-3">
-          <h4 className="font-medium text-surface-900 dark:text-white text-sm leading-tight">
-            {deal.title}
+<h4 className="font-medium text-surface-900 dark:text-white text-sm leading-tight">
+            {deal.title || deal.Name || 'Untitled Deal'}
           </h4>
           <button className="p-1 hover:bg-surface-100 dark:hover:bg-surface-700 rounded">
             <ApperIcon name="MoreVertical" className="w-3 h-3 text-surface-400" />
@@ -144,16 +145,16 @@ const Deals = () => {
             </span>
           </div>
           
-          <div className="flex items-center space-x-2 text-xs text-surface-600 dark:text-surface-400">
+<div className="flex items-center space-x-2 text-xs text-surface-600 dark:text-surface-400">
             <ApperIcon name="User" className="w-3 h-3" />
-            <span className="truncate">{contact?.name || 'Unknown'}</span>
+            <span className="truncate">{contact?.Name || 'Unknown'}</span>
           </div>
           
           <div className="flex items-center space-x-2 text-xs text-surface-600 dark:text-surface-400">
             <ApperIcon name="Calendar" className="w-3 h-3" />
-            <span>
-              {deal.expectedClose 
-                ? new Date(deal.expectedClose).toLocaleDateString()
+<span>
+              {deal.expected_close 
+                ? new Date(deal.expected_close).toLocaleDateString()
                 : 'No date set'
               }
             </span>
@@ -193,10 +194,10 @@ const Deals = () => {
         onDrop={(e) => handleDrop(e, stage.id)}
       >
         {deals.map((deal) => (
-          <DealCard 
-            key={deal.id} 
+<DealCard 
+            key={deal.Id} 
             deal={deal} 
-            isDragging={draggedDeal?.id === deal.id}
+            isDragging={draggedDeal?.Id === deal.Id}
           />
         ))}
         {deals.length === 0 && (
@@ -252,7 +253,7 @@ const Deals = () => {
     );
   }
 
-  const dealsByStage = stages.reduce((acc, stage) => {
+const dealsByStage = stages.reduce((acc, stage) => {
     acc[stage.id] = deals.filter(deal => deal.stage === stage.id);
     return acc;
   }, {});
@@ -381,10 +382,10 @@ const Deals = () => {
                   onChange={(e) => setNewDeal({ ...newDeal, contactId: e.target.value })}
                   className="w-full px-3 py-2 border border-surface-200 dark:border-surface-700 rounded-lg bg-white dark:bg-surface-800 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                 >
-                  <option value="">Select a contact</option>
+<option value="">Select a contact</option>
                   {contacts.map(contact => (
-                    <option key={contact.id} value={contact.id}>
-                      {contact.name} - {contact.company}
+                    <option key={contact.Id} value={contact.Id}>
+                      {contact.Name} - {contact.company || 'No Company'}
                     </option>
                   ))}
                 </select>
