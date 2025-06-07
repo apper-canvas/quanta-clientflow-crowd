@@ -185,10 +185,11 @@ function App() {
                   transition={{ duration: 0.3 }}
                   className="min-h-full"
                 >
-                  <currentRoute.component />
+<currentRoute.component />
                 </motion.div>
               </AnimatePresence>
             </main>
+          </div>
         </div>
 
         <ToastContainer
