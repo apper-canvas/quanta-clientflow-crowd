@@ -154,15 +154,14 @@ task.completed ? 'line-through' : ''
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-<div className="flex items-center space-x-4 text-sm text-surface-600 dark:text-surface-400">
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="flex items-center space-x-4 text-sm text-surface-600 dark:text-surface-400">
                 {contact && (
                   <div className="flex items-center space-x-1">
                     <span>{contact.Name}</span>
                   </div>
                 )}
                 <div className="flex items-center space-x-1">
-<div className="flex items-center space-x-1">
                   <ApperIcon name="Calendar" className="w-3 h-3" />
                   <span className={overdue ? 'text-error font-medium' : ''}>
                     {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No due date'}
