@@ -3,7 +3,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { motion, AnimatePresence } from 'framer-motion';
 import { routes, routeArray } from './config/routes';
-import ApperIcon from './components/ApperIcon';
+import ApperIcon from '@/components/ApperIcon';
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');

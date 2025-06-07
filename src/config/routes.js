@@ -1,10 +1,11 @@
+import HomePage from '@/components/pages/HomePage';
 import Dashboard from '../pages/Dashboard';
 import Contacts from '../pages/Contacts';
 import Deals from '../pages/Deals';
 import Tasks from '../pages/Tasks';
 import Reports from '../pages/Reports';
 
-export const routes = {
+const routes = {
   dashboard: {
     id: 'dashboard',
     label: 'Dashboard',
