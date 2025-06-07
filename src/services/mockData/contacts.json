@@ -1,0 +1,52 @@
+[
+  {
+    "id": "1",
+    "name": "Sarah Johnson",
+    "email": "sarah.johnson@techflow.com",
+    "phone": "+1 (555) 123-4567",
+    "company": "TechFlow Solutions",
+    "tags": ["client", "enterprise", "priority"],
+    "createdAt": "2024-01-15T10:30:00Z",
+    "lastActivity": "2024-01-20T14:22:00Z"
+  },
+  {
+    "id": "2",
+    "name": "Michael Chen",
+    "email": "m.chen@innovate.co",
+    "phone": "+1 (555) 234-5678",
+    "company": "Innovate Co",
+    "tags": ["prospect", "startup"],
+    "createdAt": "2024-01-12T09:15:00Z",
+    "lastActivity": "2024-01-19T16:45:00Z"
+  },
+  {
+    "id": "3",
+    "name": "Emily Rodriguez",
+    "email": "emily.rodriguez@globaltech.net",
+    "phone": "+1 (555) 345-6789",
+    "company": "GlobalTech Networks",
+    "tags": ["client", "mid-market", "long-term"],
+    "createdAt": "2024-01-08T11:20:00Z",
+    "lastActivity": "2024-01-18T13:30:00Z"
+  },
+  {
+    "id": "4",
+    "name": "David Kim",
+    "email": "david.kim@nexusmedia.com",
+    "phone": "+1 (555) 456-7890",
+    "company": "Nexus Media Group",
+    "tags": ["prospect", "media", "warm"],
+    "createdAt": "2024-01-10T15:45:00Z",
+    "lastActivity": "2024-01-17T10:15:00Z"
+  },
+  {
+    "id": "5",
+    "name": "Lisa Thompson",
+    "email": "lisa.thompson@brightfuture.org",
+    "phone": "+1 (555) 567-8901",
+    "company": "Bright Future Consulting",
+    "tags": ["client", "consulting", "referral"],
+    "createdAt": "2024-01-06T08:30:00Z",
+    "lastActivity": "2024-01-16T12:00:00Z"
+  }
+]

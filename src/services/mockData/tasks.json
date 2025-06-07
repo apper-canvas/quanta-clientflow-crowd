@@ -1,0 +1,42 @@
+[
+  {
+    "id": "1",
+    "title": "Follow up on TechFlow proposal response",
+    "contactId": "1",
+    "dueDate": "2024-01-25",
+    "priority": "high",
+    "completed": false
+  },
+  {
+    "id": "2",
+    "title": "Prepare technical demo for Innovate Co",
+    "contactId": "2",
+    "dueDate": "2024-01-26",
+    "priority": "medium",
+    "completed": false
+  },
+  {
+    "id": "3",
+    "title": "Review GlobalTech contract amendments",
+    "contactId": "3",
+    "dueDate": "2024-01-24",
+    "priority": "high",
+    "completed": false
+  },
+  {
+    "id": "4",
+    "title": "Send case studies to Nexus Media",
+    "contactId": "4",
+    "dueDate": "2024-01-28",
+    "priority": "low",
+    "completed": false
+  },
+  {
+    "id": "5",
+    "title": "Schedule training session with Bright Future team",
+    "contactId": "5",
+    "dueDate": "2024-01-23",
+    "priority": "medium",
+    "completed": true
+  }
+]

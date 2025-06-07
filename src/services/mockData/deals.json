@@ -1,0 +1,52 @@
+[
+  {
+    "id": "1",
+    "title": "TechFlow Enterprise License",
+    "value": 45000,
+    "stage": "proposal",
+    "contactId": "1",
+    "probability": 75,
+    "expectedClose": "2024-02-15",
+    "createdAt": "2024-01-10T10:00:00Z"
+  },
+  {
+    "id": "2",
+    "title": "Innovate Co Starter Package",
+    "value": 12500,
+    "stage": "qualified",
+    "contactId": "2",
+    "probability": 60,
+    "expectedClose": "2024-02-28",
+    "createdAt": "2024-01-12T14:30:00Z"
+  },
+  {
+    "id": "3",
+    "title": "GlobalTech Integration Project",
+    "value": 78000,
+    "stage": "negotiation",
+    "contactId": "3",
+    "probability": 85,
+    "expectedClose": "2024-01-30",
+    "createdAt": "2024-01-05T09:15:00Z"
+  },
+  {
+    "id": "4",
+    "title": "Nexus Media Campaign Management",
+    "value": 22000,
+    "stage": "lead",
+    "contactId": "4",
+    "probability": 25,
+    "expectedClose": "2024-03-15",
+    "createdAt": "2024-01-15T16:20:00Z"
+  },
+  {
+    "id": "5",
+    "title": "Bright Future Training Program",
+    "value": 18500,
+    "stage": "closed-won",
+    "contactId": "5",
+    "probability": 100,
+    "expectedClose": "2024-01-20",
+    "createdAt": "2024-01-03T11:45:00Z"
+  }
+]
