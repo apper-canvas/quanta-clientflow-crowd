@@ -43,4 +43,5 @@ const routes = {
   }
 };
 
+export { routes };
 export const routeArray = Object.values(routes);
