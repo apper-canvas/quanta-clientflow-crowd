@@ -245,7 +245,7 @@ const filteredContacts = contacts.filter(contact => {
       {filteredContacts.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredContacts.map((contact, index) => (
-            <ContactCard key={contact.id} contact={contact} index={index} />
+<ContactCard key={contact.Id} contact={contact} index={index} />
           ))}
         </div>
       ) : (

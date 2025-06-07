@@ -1,4 +1,5 @@
-export { default as contactService } from './api/contactService';
-export { default as dealService } from './api/dealService';
-export { default as activityService } from './api/activityService';
-export { default as taskService } from './api/taskService';
+// Service exports
+export { default as contactService } from './api/contactService.js';
+export { default as dealService } from './api/dealService.js';
+export { default as taskService } from './api/taskService.js';
+export { default as activityService } from './api/activityService.js';
